@@ -3,9 +3,13 @@ package com.example.webpos.biz;
 import com.example.webpos.db.PosDB;
 import com.example.webpos.model.Product;
 
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +23,13 @@ public class PosServiceImp implements PosService {
 
     private PosDB posDB;
 
+    //设置断路器
+    @Autowired
+    private CircuitBreakerFactory circuitBreakerFactory;
+
+
+
+
     @Autowired
     public void setPosDB(PosDB posDB) {
         this.posDB = posDB;
@@ -26,8 +37,18 @@ public class PosServiceImp implements PosService {
     
     @Override
     public List<Product> products(){
-        return posDB.getProducts();
+        CircuitBreaker circuitbreaker=circuitBreakerFactory.create("circuitbreaker");
+
+        return circuitbreaker.run(()->posDB.getProducts(),throwable->getDefaultProduct());
     }
+
+
+    private List<Product> getDefaultProduct(){
+            List<Product> temp=new ArrayList<>();
+            temp.add(new Product("PD0","出错", 199, "src/assets/propictures/1.jpg",1,100));
+            return temp;
+    }
+
 
     //获得某个产品的信息
     public Product getProductById(String id){

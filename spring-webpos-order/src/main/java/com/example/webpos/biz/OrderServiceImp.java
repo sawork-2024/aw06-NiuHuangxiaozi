@@ -2,12 +2,15 @@ package com.example.webpos.biz;
 
 import com.example.webpos.db.OrderDB;
 import com.example.webpos.model.myOrder;
+import com.example.webpos.model.dto.SettingDto;
 
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 
 
@@ -24,7 +27,20 @@ public class OrderServiceImp implements OrderService {
         this.orderDB = posDB;
     }
 
+    @Autowired
+    @LoadBalanced
+    private RestTemplate restTemplate;
+
+    private  String settingURL="http://setting-service/";
+
     public List<myOrder> orders(){
+        //拿一下配置
+
+        List<SettingDto> settings = restTemplate.getForObject(settingURL+"settings", List.class);
+        System.out.println("=============");
+        System.out.println(settings);
+        System.out.println("=============");
+
         return orderDB.getOrders();
     }
 

@@ -29,7 +29,7 @@ spring:
     name: order-service
 
 server:
-  port: 4000
+  port: 5000
 
 
 eureka:
